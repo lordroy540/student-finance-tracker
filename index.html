@@ -1,170 +1,212 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Student Finance Tracker</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f4f6fa;color:#202938}
-header{background:#172554;color:white;padding:25px 7%}
-header h1{margin:0 0 8px}
-header p{margin:0;color:#bfdbfe}
-main{max-width:1050px;margin:30px auto;padding:0 18px}
+body{margin:0;background:#f5f7fb;color:#172033;font-family:Arial,sans-serif}
+header{background:#172554;color:white;padding:25px max(5%,calc((100% - 1100px)/2))}
+header h1{margin:0 0 7px}
+header p{color:#cbd5e1;margin:0}
+main{max-width:1100px;margin:30px auto;padding:0 18px}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:15px}
-.card{background:white;padding:20px;border-radius:13px;box-shadow:0 3px 12px #0000000a;margin-bottom:18px}
-.card p{color:#64748b;margin:0 0 10px}
-.card h2{margin:0;font-size:25px}
-h3{margin-top:0}
-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-input,select,button{padding:12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;width:100%}
+.card{background:white;border-radius:15px;padding:20px;margin-bottom:18px;box-shadow:0 3px 15px #1725540b}
+.muted{color:#64748b;font-size:13px}
+.stat{font-size:27px;font-weight:bold;margin-top:10px}
+h3{margin:0 0 18px}
+input,select,button{padding:12px;border:1px solid #dbe2ed;border-radius:9px;font-size:14px;width:100%}
 button{background:#2563eb;color:white;border:0;font-weight:bold;cursor:pointer}
 button:hover{background:#1d4ed8}
-.delete{background:#fee2e2;color:#b91c1c;padding:7px}
-.progress{height:12px;background:#e2e8f0;border-radius:20px;overflow:hidden;margin:12px 0}
-#progressBar{height:100%;width:0;background:#2563eb}
-table{width:100%;border-collapse:collapse}
-th,td{text-align:left;padding:12px 8px;border-bottom:1px solid #e2e8f0}
-th{color:#64748b;font-size:13px}
-.category{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #eee}
-.muted{color:#64748b;font-size:13px}
-@media(max-width:550px){header{padding:22px 18px}td,th{font-size:12px;padding:9px 4px}}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.actions{display:flex;gap:7px}
+.actions button{padding:8px;font-size:12px}
+.delete{background:#fee2e2;color:#b91c1c}
+.edit{background:#e0e7ff;color:#3730a3}
+.progress{height:12px;background:#e2e8f0;border-radius:20px;overflow:hidden;margin:15px 0}
+#progressBar{height:100%;background:#2563eb;width:0;transition:.3s}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.barrow{margin:14px 0}
+.barlabel{display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px}
+.bar{height:9px;background:#e2e8f0;border-radius:10px;overflow:hidden}
+.bar span{display:block;height:100%;background:#3b82f6;border-radius:10px}
+table{width:100%;border-collapse:collapse;min-width:560px}
+td,th{padding:13px 8px;text-align:left;border-bottom:1px solid #edf0f5;font-size:13px}
+th{color:#64748b}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.toolbar button{width:auto}
+#formTitle{margin-bottom:15px}
+@media(max-width:650px){.grid{grid-template-columns:1fr}.stat{font-size:23px}header{padding:23px 18px}}
 </style>
 </head>
 <body>
 <header>
 <h1>Student Finance Tracker</h1>
-<p>Take control of your money, one expense at a time.</p>
+<p>Manage your money. Build better financial habits.</p>
 </header>
-
 <main>
 <section class="stats">
-<div class="card"><p>Total Spent</p><h2 id="total">₹0</h2></div>
-<div class="card"><p>Monthly Budget</p><h2 id="budgetDisplay">₹10,000</h2></div>
-<div class="card"><p>Remaining Budget</p><h2 id="remaining">₹10,000</h2></div>
+<div class="card"><div class="muted">Monthly spending</div><div class="stat" id="total">₹0</div></div>
+<div class="card"><div class="muted">Monthly budget</div><div class="stat" id="budgetDisplay">₹10,000</div></div>
+<div class="card"><div class="muted">Remaining budget</div><div class="stat" id="remaining">₹10,000</div></div>
+<div class="card"><div class="muted">Transactions</div><div class="stat" id="count">0</div></div>
 </section>
 
 <section class="card">
-<h3>Monthly Budget</h3>
-<input type="number" id="budgetInput" placeholder="Enter monthly budget" min="1">
-<button onclick="setBudget()" style="margin-top:10px">Update Budget</button>
+<h3>Monthly budget</h3>
+<input id="budgetInput" type="number" min="1" placeholder="Enter monthly budget">
+<button onclick="setBudget()" style="margin-top:10px">Update budget</button>
 <div class="progress"><div id="progressBar"></div></div>
-<p class="muted" id="progressText">0% of budget used</p>
+<div class="muted" id="progressText">0% used</div>
 </section>
 
 <section class="card">
-<h3>Add New Expense</h3>
+<h3 id="formTitle">Add an expense</h3>
 <form id="expenseForm">
 <input id="description" placeholder="Expense name" required>
-<input id="amount" type="number" placeholder="Amount (₹)" min="0.01" step="0.01" required>
+<input id="amount" type="number" min="0.01" step="0.01" placeholder="Amount ₹" required>
 <select id="category">
-<option>Food</option>
-<option>Travel</option>
-<option>Shopping</option>
-<option>Education</option>
-<option>Entertainment</option>
-<option>Other</option>
+<option>Food</option><option>Travel</option><option>Shopping</option>
+<option>Education</option><option>Entertainment</option><option>Other</option>
 </select>
 <input id="date" type="date" required>
-<button type="submit">Add Expense</button>
+<button id="submitBtn">Add expense</button>
+<button type="button" id="cancelBtn" onclick="cancelEdit()" style="display:none;background:#64748b">Cancel edit</button>
 </form>
 </section>
 
-<section class="card">
-<h3>Spending Breakdown</h3>
+<section class="grid">
+<div class="card">
+<h3>Spending by category</h3>
 <div id="breakdown"></div>
+</div>
+<div class="card">
+<h3>Monthly overview</h3>
+<div id="overview"></div>
+</div>
 </section>
 
 <section class="card">
-<h3>Recent Expenses</h3>
+<div class="toolbar">
+<h3>Transaction history</h3>
+<button onclick="exportCSV()">Export CSV ↓</button>
+</div>
 <div style="overflow-x:auto">
 <table>
-<thead><tr><th>Expense</th><th>Category</th><th>Amount</th><th>Date</th><th></th></tr></thead>
+<thead><tr><th>Expense</th><th>Category</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead>
 <tbody id="expenseList"></tbody>
 </table>
 </div>
-<p id="empty" class="muted">No expenses yet. Add your first expense above!</p>
+<p class="muted" id="empty">No transactions this month yet.</p>
 </section>
 </main>
 
 <script>
 let expenses=JSON.parse(localStorage.getItem("expenses")||"[]");
 let budget=Number(localStorage.getItem("budget"))||10000;
-
+let editing=null;
+const $=id=>document.getElementById(id);
 const money=n=>"₹"+Number(n).toLocaleString("en-IN",{maximumFractionDigits:2});
-
-document.getElementById("date").value=new Date().toISOString().slice(0,10);
+const currentMonth=()=>new Date().toISOString().slice(0,7);
+$("date").value=new Date().toISOString().slice(0,10);
 
 function save(){
 localStorage.setItem("expenses",JSON.stringify(expenses));
 localStorage.setItem("budget",budget);
 render();
 }
-
 function setBudget(){
-const value=Number(document.getElementById("budgetInput").value);
-if(value<=0){alert("Enter a valid budget");return;}
-budget=value;
-document.getElementById("budgetInput").value="";
-save();
+let n=Number($("budgetInput").value);
+if(n<=0){alert("Enter a valid budget");return}
+budget=n;$("budgetInput").value="";save();
 }
-
-function addExpense(e){
+function safe(s){
+return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+$("expenseForm").addEventListener("submit",e=>{
 e.preventDefault();
-const description=document.getElementById("description").value.trim();
-const amount=Number(document.getElementById("amount").value);
-const category=document.getElementById("category").value;
-const date=document.getElementById("date").value;
-if(!description||amount<=0||!date)return;
-expenses.unshift({id:Date.now(),description,amount,category,date});
-document.getElementById("expenseForm").reset();
-document.getElementById("date").value=new Date().toISOString().slice(0,10);
-save();
+let item={
+description:$("description").value.trim(),
+amount:Number($("amount").value),
+category:$("category").value,
+date:$("date").value
+};
+if(!item.description||item.amount<=0||!item.date)return;
+if(editing!==null){
+expenses=expenses.map(x=>x.id===editing?{...x,...item}:x);
+}else{
+expenses.unshift({id:Date.now(),...item});
 }
-
+cancelEdit();$("expenseForm").reset();
+$("date").value=new Date().toISOString().slice(0,10);
+save();
+});
+function editExpense(id){
+let x=expenses.find(e=>e.id===id);
+if(!x)return;
+editing=id;
+$("description").value=x.description;
+$("amount").value=x.amount;
+$("category").value=x.category;
+$("date").value=x.date;
+$("formTitle").textContent="Edit expense";
+$("submitBtn").textContent="Save changes";
+$("cancelBtn").style.display="block";
+window.scrollTo({top:0,behavior:"smooth"});
+}
+function cancelEdit(){
+editing=null;
+$("formTitle").textContent="Add an expense";
+$("submitBtn").textContent="Add expense";
+$("cancelBtn").style.display="none";
+}
 function deleteExpense(id){
-expenses=expenses.filter(x=>x.id!==id);
-save();
+if(confirm("Delete this expense?")){
+expenses=expenses.filter(x=>x.id!==id);save();
 }
-
+}
 function render(){
-const month=new Date().toISOString().slice(0,7);
-const monthly=expenses.filter(x=>x.date.startsWith(month));
-const total=monthly.reduce((sum,x)=>sum+x.amount,0);
-document.getElementById("total").textContent=money(total);
-document.getElementById("budgetDisplay").textContent=money(budget);
-document.getElementById("remaining").textContent=money(budget-total);
+let month=expenses.filter(x=>x.date.startsWith(currentMonth()));
+let total=month.reduce((s,x)=>s+x.amount,0);
+$("total").textContent=money(total);
+$("budgetDisplay").textContent=money(budget);
+$("remaining").textContent=money(budget-total);
+$("count").textContent=month.length;
+let p=total/budget*100;
+$("progressBar").style.width=Math.min(p,100)+"%";
+$("progressBar").style.background=p>100?"#dc2626":"#2563eb";
+$("progressText").textContent=p.toFixed(1)+"% of your monthly budget used";
 
-const percent=budget?total/budget*100:0;
-document.getElementById("progressBar").style.width=Math.min(percent,100)+"%";
-document.getElementById("progressBar").style.background=percent>100?"#dc2626":"#2563eb";
-document.getElementById("progressText").textContent=percent.toFixed(1)+"% of monthly budget used";
+let categories={};
+month.forEach(x=>categories[x.category]=(categories[x.category]||0)+x.amount);
+let entries=Object.entries(categories).sort((a,b)=>b[1]-a[1]);
+$("breakdown").innerHTML=entries.map(([name,value])=>`
+<div class="barrow"><div class="barlabel"><span>${safe(name)}</span><strong>${money(value)}</strong></div>
+<div class="bar"><span style="width:${total?value/total*100:0}%"></span></div></div>`).join("")||'<p class="muted">Your categories will appear here.</p>';
 
-document.getElementById("expenseList").innerHTML=monthly.map(x=>`
-<tr>
-<td>${escapeHTML(x.description)}</td>
-<td>${escapeHTML(x.category)}</td>
-<td>${money(x.amount)}</td>
-<td>${x.date}</td>
-<td><button class="delete" onclick="deleteExpense(${x.id})">Delete</button></td>
-</tr>`).join("");
+let days={};
+month.forEach(x=>days[x.date]=(days[x.date]||0)+x.amount);
+let top=Math.max(...Object.values(days),1);
+$("overview").innerHTML=Object.entries(days).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7).map(([day,value])=>`
+<div class="barrow"><div class="barlabel"><span>${day}</span><strong>${money(value)}</strong></div>
+<div class="bar"><span style="width:${value/top*100}%"></span></div></div>`).join("")||'<p class="muted">Daily spending will appear here.</p>';
 
-document.getElementById("empty").style.display=monthly.length?"none":"block";
-
-const totals={};
-monthly.forEach(x=>totals[x.category]=(totals[x.category]||0)+x.amount);
-document.getElementById("breakdown").innerHTML=Object.entries(totals).sort((a,b)=>b[1]-a[1]).map(([name,value])=>`
-<div class="category"><span>${escapeHTML(name)}</span><strong>${money(value)}</strong></div>
-`).join("")||'<p class="muted">Your spending categories will appear here.</p>';
+$("expenseList").innerHTML=month.map(x=>`
+<tr><td>${safe(x.description)}</td><td>${safe(x.category)}</td><td>${money(x.amount)}</td><td>${x.date}</td>
+<td><div class="actions"><button class="edit" onclick="editExpense(${x.id})">Edit</button><button class="delete" onclick="deleteExpense(${x.id})">Delete</button></div></td></tr>`).join("");
+$("empty").style.display=month.length?"none":"block";
 }
-
-function escapeHTML(str){
-return String(str).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function exportCSV(){
+let rows=[["Description","Category","Amount","Date"],...expenses.map(x=>[x.description,x.category,x.amount,x.date])];
+let csv=rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n");
+let blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
+let url=URL.createObjectURL(blob),a=document.createElement("a");
+a.href=url;a.download="student-finance-expenses.csv";a.click();
+URL.revokeObjectURL(url);
 }
-
-document.getElementById("expenseForm").addEventListener("submit",addExpense);
 render();
 </script>
 </body>
 </html>
+
